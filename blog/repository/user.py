@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from fastapi import Depends,HTTPException,status
 from ..database import get_db
 from ..hashing import Hash
-from .. import schemas
+from .. import schemas,oauth2
 from .. import models
 
 
@@ -25,11 +25,13 @@ def show_user(id:int,db : Session = Depends(get_db)):
     return user
 
 
-def edit_user(id:int ,request : schemas.User,db: Session = Depends(get_db)):
+def edit_user(id:int ,request : schemas.User,db: Session = Depends(get_db),current_user: schemas.User = Depends(oauth2.get_current_user)):
     euser = db.query(models.User).filter(models.User.id == id)
     if not euser.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"User with id {id} not found")
-    euser.update(request.dict(exclude_unset=True))
+    if euser.first().id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail=f"you dont have access to others account details!!")
+    euser.update({"name" : request.name,"email" : request.email,"password" : Hash.bcrypt(request.password)})
     db.commit()
     return euser.first()
 

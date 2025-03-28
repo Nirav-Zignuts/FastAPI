@@ -86,3 +86,13 @@ Response:
 
 ### Access Protected Route
 include header :- Authorizatio : bearer <token>
+
+
+this project also include docker architecture for scalability
+to run project using docker run below commands.
+--> 1 . create docker image using this command .
+docker build -t <image name> 
+
+run that image using container :
+docker run -p 8000:8000 <image name>
+ and all set project is live .
